@@ -1,5 +1,6 @@
 mod chat;
-use crate::chat::Message;
+mod message;
+use message::Message;
 use std::io;
 use std::io::Write;
 use std::time::{SystemTime, UNIX_EPOCH};

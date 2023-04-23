@@ -20,6 +20,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         message_user = message_user.trim().to_string();
         if message_user.eq("/quit") {
             break;
+        } else if message_user.trim().eq("") {
+            continue;
         }
         let mut message = Message::new(
             "USER".to_string(),

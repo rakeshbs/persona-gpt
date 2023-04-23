@@ -20,6 +20,20 @@ fn summarize_messages(messages: &Vec<Message>) -> String {
     return summary;
 }
 
+use std::fs;
+use std::path::Path;
+
+fn check_and_create_directory() -> Result<(), Box<dyn std::error::Error>> {
+    let dir_path = "./data";
+
+    if !Path::new(dir_path).exists() {
+        fs::create_dir_all(dir_path)?;
+        println!("Data directory created: {}", dir_path);
+    }
+
+    Ok(())
+}
+
 impl Bot {
     pub fn new(name: String, character_description: String) -> Bot {
         Bot {
@@ -34,6 +48,7 @@ impl Bot {
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();
         let character_description = contents;
+        check_and_create_directory().unwrap();
         Bot::new("AI".to_string(), character_description)
     }
 

@@ -8,3 +8,5 @@ cargo run
 ```
 
 The `character.txt` file contains the description of how the chatbot should reply. You can modify the file to change character of the bot.
+
+The `data` directory contains all the stored conversations with the embeddings.

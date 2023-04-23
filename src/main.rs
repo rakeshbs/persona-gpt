@@ -28,8 +28,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         );
         message.get_embedding().await;
 
-        let reply = bot.get_response_for_message(&message).await?;
-        println!("{}: {}", bot.name, reply);
+        print!("\n{}: ", bot.name);
+        bot.get_response_for_message(&message).await?;
+        println!("\n");
     }
     return Ok(());
 }

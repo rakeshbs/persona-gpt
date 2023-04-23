@@ -47,7 +47,7 @@ impl Bot {
             "{}\n{}\n{}",
             self.character_description, context_history, history
         );
-        let response = openai::get_response(&message.content, &context).await?;
+        let response = openai::stream_response(&message.content, &context).await?;
         let mut ai_message = Message::new(
             self.name.to_string(),
             response.clone(),

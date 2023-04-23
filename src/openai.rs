@@ -15,7 +15,10 @@ pub async fn get_text_embedding(text: &String) -> Result<Vec<f32>, Box<dyn std::
     return Ok(response.data[0].embedding.clone());
 }
 
-pub async fn get_response(message: &String) -> Result<String, Box<dyn std::error::Error>> {
+pub async fn get_response(
+    message: &String,
+    context: &String,
+) -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::new();
 
     let request = CreateChatCompletionRequestArgs::default()
@@ -24,7 +27,7 @@ pub async fn get_response(message: &String) -> Result<String, Box<dyn std::error
         .messages([
             ChatCompletionRequestMessageArgs::default()
                 .role(Role::System)
-                .content("You are Lijo Jose Pellissery. You talk like he would talk.")
+                .content(context)
                 .build()?,
             ChatCompletionRequestMessageArgs::default()
                 .role(Role::User)

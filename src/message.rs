@@ -1,29 +1,36 @@
-use crate::openai::get_text_embedding;
+use crate::utils::read_and_sort_dir;
+use crate::{openai::get_text_embedding, utils::token_length};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+
+pub fn get_message_similarity(message1: &Message, message2: &Message) -> f32 {
+    let vector1 = message1.embedding_vector.as_ref().unwrap();
+    let vector2 = message2.embedding_vector.as_ref().unwrap();
+    let mut dot_product = 0.0;
+    let mut norm1 = 0.0;
+    let mut norm2 = 0.0;
+    for i in 0..vector1.len() {
+        dot_product += vector1[i] * vector2[i];
+        norm1 += vector1[i] * vector1[i];
+        norm2 += vector2[i] * vector2[i];
+    }
+    return dot_product / (norm1 * norm2).sqrt();
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Message {
-    uuid: String,
-    role: String,
-    content: String,
-    embedding_vector: Option<Vec<f32>>,
-    timestamp: String,
+    pub role: String,
+    pub content: String,
+    pub embedding_vector: Option<Vec<f32>>,
+    pub timestamp: String,
 }
 
 impl Message {
-    pub fn new(
-        role: String,
-        content: String,
-        timestamp: String,
-        embedding_vector: Option<Vec<f32>>,
-    ) -> Self {
+    pub fn new(role: String, content: String, timestamp: String) -> Self {
         Message {
-            uuid: Uuid::new_v4().to_string(),
             role,
             content,
             timestamp,
-            embedding_vector,
+            embedding_vector: None,
         }
     }
 
@@ -39,7 +46,7 @@ impl Message {
     pub async fn save_to_file(&self) {
         use std::io::Write;
         let json = serde_json::to_string(&self).unwrap();
-        let mut file = std::fs::File::create(format!("../data/{}.json", self.uuid)).unwrap();
+        let mut file = std::fs::File::create(format!("../data/{}.json", self.timestamp)).unwrap();
         file.write_all(json.as_bytes()).unwrap();
     }
 
@@ -51,15 +58,50 @@ impl Message {
     }
 
     // get all files in the folder and load the messagtes
-    pub fn load_all_from_file() -> Result<Vec<Message>, Box<dyn std::error::Error>> {
+    pub fn load_all_from_file(
+        max_tokens: usize,
+    ) -> Result<Vec<Message>, Box<dyn std::error::Error>> {
         let mut messages: Vec<Message> = Vec::new();
-        for entry in std::fs::read_dir("../data")? {
-            let entry = entry?;
+        let files = read_and_sort_dir("../data")?;
+        let mut total_tokens = 0;
+
+        for entry in files {
             let path = entry.path();
             let file_name = path.file_name().unwrap().to_str().unwrap();
             if file_name.ends_with(".json") {
                 let message = Message::load_from_file(&file_name.replace(".json", ""))?;
+                let tokens = token_length(&message.content);
+                total_tokens += tokens;
+                if total_tokens > max_tokens {
+                    break;
+                }
                 messages.push(message);
+            }
+        }
+        return Ok(messages);
+    }
+
+    pub fn load_context_from_file(
+        max_tokens: usize,
+        query: &Message,
+    ) -> Result<Vec<Message>, Box<dyn std::error::Error>> {
+        let mut messages: Vec<Message> = Vec::new();
+        let files = read_and_sort_dir("../data")?;
+        let mut total_tokens = 0;
+
+        for entry in files {
+            let path = entry.path();
+            let file_name = path.file_name().unwrap().to_str().unwrap();
+            if file_name.ends_with(".json") {
+                let message = Message::load_from_file(&file_name.replace(".json", ""))?;
+                let tokens = token_length(&message.content);
+                if get_message_similarity(&query, &message) > 0.8 {
+                    total_tokens += tokens;
+                    if total_tokens > max_tokens {
+                        break;
+                    }
+                    messages.push(message);
+                }
             }
         }
         return Ok(messages);

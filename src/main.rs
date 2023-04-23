@@ -1,12 +1,17 @@
+mod bot;
 mod message;
 mod openai;
+mod utils;
+
+use bot::Bot;
 use message::Message;
 use std::io;
 use std::io::Write;
-use std::time::{SystemTime, UNIX_EPOCH};
+use utils::get_epoch_ms;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let bot = Bot::from_character_file();
     loop {
         let mut message_user = String::new();
         print!("USER: ");
@@ -16,27 +21,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         if message_user.eq("/quit") {
             break;
         }
-        // unix time stamp
-
         let mut message = Message::new(
             "USER".to_string(),
             message_user.to_string(),
             get_epoch_ms().to_string(),
-            None,
         );
+        message.get_embedding().await;
 
-        let result = openai::get_response(&message_user).await;
-        match result {
-            Ok(response) => println!("\nAI: {}\n", response),
-            Err(e) => return Err(e),
-        }
+        let reply = bot.get_response_for_message(&message).await?;
+        println!("{}: {}", bot.name, reply);
     }
     return Ok(());
-}
-
-fn get_epoch_ms() -> u128 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_millis()
 }

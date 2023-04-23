@@ -61,6 +61,10 @@ pub async fn stream_response(
                 .role(Role::User)
                 .content(message)
                 .build()?,
+            ChatCompletionRequestMessageArgs::default()
+                .role(Role::Assistant)
+                .content("AI: ")
+                .build()?,
         ])
         .build()?;
 

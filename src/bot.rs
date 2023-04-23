@@ -30,7 +30,7 @@ impl Bot {
 
     // read from character.txt file and set character_description and name and create a new bot
     pub fn from_character_file() -> Bot {
-        let mut file = std::fs::File::open("../data/character.txt").unwrap();
+        let mut file = std::fs::File::open("./character.txt").unwrap();
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();
         let character_description = contents;
@@ -48,11 +48,12 @@ impl Bot {
             self.character_description, context_history, history
         );
         let response = openai::get_response(&message.content, &context).await?;
-        let ai_message = Message::new(
+        let mut ai_message = Message::new(
             self.name.to_string(),
             response.clone(),
             get_epoch_ms().to_string(),
         );
+        ai_message.get_embedding().await;
         message.save_to_file().await;
         ai_message.save_to_file().await;
         return Ok(response);

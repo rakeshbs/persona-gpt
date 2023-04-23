@@ -46,12 +46,12 @@ impl Message {
     pub async fn save_to_file(&self) {
         use std::io::Write;
         let json = serde_json::to_string(&self).unwrap();
-        let mut file = std::fs::File::create(format!("../data/{}.json", self.timestamp)).unwrap();
+        let mut file = std::fs::File::create(format!("./data/{}.json", self.timestamp)).unwrap();
         file.write_all(json.as_bytes()).unwrap();
     }
 
     pub fn load_from_file(uuid: &String) -> Result<Message, Box<dyn std::error::Error>> {
-        let file = std::fs::File::open(format!("../data/{}.json", uuid))?;
+        let file = std::fs::File::open(format!("./data/{}.json", uuid))?;
         let reader = std::io::BufReader::new(file);
         let message: Message = serde_json::from_reader(reader)?;
         return Ok(message);
@@ -62,7 +62,7 @@ impl Message {
         max_tokens: usize,
     ) -> Result<Vec<Message>, Box<dyn std::error::Error>> {
         let mut messages: Vec<Message> = Vec::new();
-        let files = read_and_sort_dir("../data")?;
+        let files = read_and_sort_dir("./data")?;
         let mut total_tokens = 0;
 
         for entry in files {
@@ -86,7 +86,7 @@ impl Message {
         query: &Message,
     ) -> Result<Vec<Message>, Box<dyn std::error::Error>> {
         let mut messages: Vec<Message> = Vec::new();
-        let files = read_and_sort_dir("../data")?;
+        let files = read_and_sort_dir("./data")?;
         let mut total_tokens = 0;
 
         for entry in files {

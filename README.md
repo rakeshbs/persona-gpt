@@ -7,4 +7,4 @@ To run the code :
 cargo run
 ```
 
-The `character.txt` file contains the description of how the chatbot should reply. You can modify to change it's character.
+The `character.txt` file contains the description of how the chatbot should reply. You can modify the file to change character of the bot.

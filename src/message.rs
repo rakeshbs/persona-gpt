@@ -1,3 +1,4 @@
+use crate::openai::get_text_embedding;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -35,7 +36,7 @@ impl Message {
         self.embedding_vector = Some(embedding_vector.unwrap());
     }
 
-    pub fn save_to_file(&self) {
+    pub async fn save_to_file(&self) {
         use std::io::Write;
         let json = serde_json::to_string(&self).unwrap();
         let mut file = std::fs::File::create(format!("../data/{}.json", self.uuid)).unwrap();

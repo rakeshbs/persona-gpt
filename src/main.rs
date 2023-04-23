@@ -1,5 +1,5 @@
-mod chat;
 mod message;
+mod openai;
 use message::Message;
 use std::io;
 use std::io::Write;
@@ -25,9 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             None,
         );
 
-        //messageeget_embedding().await;
-
-        let result = chat::get_response(&message_user).await;
+        let result = openai::get_response(&message_user).await;
         match result {
             Ok(response) => println!("\nAI: {}\n", response),
             Err(e) => return Err(e),
